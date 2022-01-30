@@ -548,3 +548,53 @@ pub struct MPSIntersectionDistancePrimitiveIndexCoordinates {
     /// if the intersection type is `MPSIntersectionTypeAny`.
     pub coordinates: [f32; 2],
 }
+
+pub enum MPSImageGaussianBlur {}
+
+foreign_obj_type! {
+    type CType = MPSImageGaussianBlur;
+    pub struct ImageGaussianBlur;
+    pub struct ImageGaussianBlurRef;
+    type ParentType = KernelRef;
+}
+
+impl ImageGaussianBlur {
+    pub fn from_device_and_sigma(device: &DeviceRef, sigma: f32) -> Option<Self> {
+        unsafe {
+            let kernel: ImageGaussianBlur = msg_send![class!(MPSImageGaussianBlur), alloc];
+            let ptr: *mut Object = msg_send![kernel.as_ref(), initWithDevice: device sigma:sigma];
+            if ptr.is_null() {
+                None
+            } else {
+                Some(kernel)
+            }
+        }
+    }
+}
+
+impl ImageGaussianBlurRef {
+    pub fn encode(
+        &self,
+        command_buffer: &CommandBufferRef,
+        input_texture: &TextureRef,
+        output_texture: &TextureRef,
+    ) {
+        unsafe {
+            let dummy: () = msg_send![self, encodeToCommandBuffer:command_buffer sourceTexture:input_texture destinationTexture:output_texture];
+        }
+    }
+
+    pub fn set_image_edge_mode(&self, mode: MPSImageEdgeMode) {
+        unsafe { msg_send![self, setEdgeMode: mode] }
+    }
+}
+
+#[repr(u64)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum MPSImageEdgeMode {
+    Zero = 0,
+    Clamp = 1,
+    Mirror = 2,
+    MirrorWithEdge = 3,
+    Constant = 4,
+}
