@@ -580,7 +580,7 @@ impl ImageGaussianBlurRef {
         output_texture: &TextureRef,
     ) {
         unsafe {
-            let dummy: () = msg_send![self, encodeToCommandBuffer:command_buffer sourceTexture:input_texture destinationTexture:output_texture];
+            let _: () = msg_send![self, encodeToCommandBuffer:command_buffer sourceTexture:input_texture destinationTexture:output_texture];
         }
     }
 
